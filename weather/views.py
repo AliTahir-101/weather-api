@@ -59,16 +59,19 @@ class WeatherView(APIView):
             data = response.json()
 
             # Extract the relevant information from the API response
+            weather_data = data.get("main", {})
+            weather_description = data.get("weather", [{}])[0]
+
             city_info = {
                 "city_name": city_name,
-                "temperature": data["main"]["temp"],
-                "min_temperature": data["main"]["temp_min"],
-                "max_temperature": data["main"]["temp_max"],
-                "humidity": data["main"]["humidity"],
-                "pressure": data["main"]["pressure"],
-                "wind_speed": data["wind"]["speed"],
-                "wind_direction": self.get_wind_direction(data["wind"]["deg"]),
-                "description": data["weather"][0]["description"]
+                "temperature": weather_data.get("temp"),
+                "min_temperature": weather_data.get("temp_min"),
+                "max_temperature": weather_data.get("temp_max"),
+                "humidity": weather_data.get("humidity"),
+                "pressure": weather_data.get("pressure"),
+                "wind_speed": data.get("wind", {}).get("speed"),
+                "wind_direction": self.get_wind_direction(data.get("wind", {}).get("deg")),
+                "description": weather_description.get("description")
             }
 
             return Response(city_info)
