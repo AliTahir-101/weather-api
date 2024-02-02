@@ -2,11 +2,55 @@ import requests
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.conf import settings
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+from weather.serializers import WeatherSerializer
 from requests.exceptions import RequestException, ConnectionError, HTTPError
 
 
 class WeatherView(APIView):
+    """
+    This view retrieves weather data from the OPENWEATHERMAP_API for a specified city.
+
+    - `city_name`: The name of the city for which weather data is requested.
+    """
+    @swagger_auto_schema(
+        operation_description="Retrieve weather data for a specified city.",
+        manual_parameters=[
+            openapi.Parameter('city_name', openapi.IN_PATH,
+                              description="The name of the city.", type=openapi.TYPE_STRING)
+        ],
+        responses={
+            200: openapi.Response('200 OK', WeatherSerializer(),
+                                  examples={
+                                  'application/json': {
+                                      "city_name": "Helsinki",
+                                      "temperature": -0.39,
+                                      "min_temperature": -1.67,
+                                      "max_temperature": 0.98,
+                                      "humidity": 85,
+                                      "pressure": 998,
+                                      "wind_speed": 12.07,
+                                      "wind_direction": "Southwest",
+                                      "description": "clear sky"
+                                  }}),
+            400: "Bad Request: The provided city_name parameter is invalid.",
+            403: "Forbidden: Access to this resource is not allowed.",
+            404: "Not Found: The requested city was not found.",
+            500: "Internal Server Error: An unexpected error occurred.",
+            503: "Service Unavailable: The API server is currently unavailable."
+        }
+    )
     def get(self, request, city_name):
+        """
+        Retrieve weather data for the specified city.
+
+        Parameters:
+        - `city_name`: The name of the city.
+
+        Returns:
+        - Weather data including temperature, humidity, wind speed, etc. (in metric units).
+        """
         try:
             api_url = f"{settings.OPENWEATHERMAP_API_URL}?q={city_name}&appid={settings.OPENWEATHERMAP_API_KEY}&units=metric"
             response = requests.get(api_url)
