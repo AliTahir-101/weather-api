@@ -10,11 +10,20 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import os
+import environ
+
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+env = environ.Env()
+# Reading .env file
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
+OPENWEATHERMAP_API_URL = env('OPENWEATHERMAP_API_URL')
+OPENWEATHERMAP_API_KEY = env('OPENWEATHERMAP_API_KEY')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
