@@ -1,6 +1,7 @@
 import requests
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.core.cache import cache
 from django.conf import settings
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -52,6 +53,12 @@ class WeatherView(APIView):
         - Weather data including temperature, humidity, wind speed, etc. (in metric units).
         """
         try:
+            cache_key = f'weather_data_{city_name}'
+            cached_weather = cache.get(cache_key)
+
+            if cached_weather:
+                return Response(cached_weather)
+
             api_url = f"{settings.OPENWEATHERMAP_API_URL}?q={city_name}&appid={settings.OPENWEATHERMAP_API_KEY}&units=metric"
             response = requests.get(api_url)
             response.raise_for_status()  # Raise an exception for HTTP errors (e.g., 404, 500)
@@ -73,6 +80,9 @@ class WeatherView(APIView):
                 "wind_direction": self.get_wind_direction(data.get("wind", {}).get("deg")),
                 "description": weather_description.get("description")
             }
+
+            # Cache the result before returning
+            cache.set(cache_key, city_info, settings.WEATHER_CACHE_TIMEOUT)
 
             return Response(city_info)
 

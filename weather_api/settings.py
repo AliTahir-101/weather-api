@@ -105,6 +105,21 @@ DATABASES = {
     }
 }
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        },
+        'KEY_PREFIX': 'weather_api'
+    }
+}
+
+
+# Cache timeout for weather data in seconds (e.g. 300 for 5 minutes)
+WEATHER_CACHE_TIMEOUT = 300  # Default to 5 minutes
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
