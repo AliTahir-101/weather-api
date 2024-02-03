@@ -100,8 +100,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'weather_api.wsgi.application'
-
+ASGI_APPLICATION = 'weather_api.asgi.application'
 
 # Default Permissions or Pagination Styles
 REST_FRAMEWORK = {
