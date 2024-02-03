@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'weather',
     'rest_framework',
     'drf_yasg',
+    'adrf'
 ]
 
 MIDDLEWARE = [

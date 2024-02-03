@@ -1,14 +1,13 @@
-import requests
-from rest_framework.views import APIView
+import httpx
+import asyncio
+from adrf.views import APIView
 from rest_framework.response import Response
 from django.core.cache import cache
 from django.conf import settings
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from weather.serializers import WeatherSerializer
-from requests.exceptions import RequestException, ConnectionError, HTTPError
-from django.utils.translation import activate, gettext as _
-from django.utils.translation import get_language_from_request
+from django.utils.translation import get_language_from_request, activate, gettext as _
 
 
 class WeatherView(APIView):
@@ -44,10 +43,10 @@ class WeatherView(APIView):
             503: "Service Unavailable: The API server is currently unavailable."
         }
     )
-    def get(self, request, city_name):
-        return self.retrieve_weather_data(request, city_name)
+    async def get(self, request, city_name):
+        return await self.retrieve_weather_data(request, city_name)
 
-    def retrieve_weather_data(self, request, city_name, lang_code=None):
+    async def retrieve_weather_data(self, request, city_name, lang_code=None):
         """
         Retrieve weather data for the specified city.
 
@@ -76,8 +75,9 @@ class WeatherView(APIView):
                 activate(lang_code)
 
             api_url = f"{settings.OPENWEATHERMAP_API_URL}?q={city_name}&appid={settings.OPENWEATHERMAP_API_KEY}&units=metric"
-            response = requests.get(api_url)
-            response.raise_for_status()  # Raise an exception for HTTP errors (e.g., 404, 500)
+            async with httpx.AsyncClient() as client:
+                response = await client.get(api_url)
+                response.raise_for_status()  # Raise an exception for HTTP errors (e.g., 404, 500)
 
             data = response.json()
 
@@ -102,17 +102,21 @@ class WeatherView(APIView):
 
             return Response(city_info)
 
-        except ConnectionError as e:
-            # Handle connection errors
+        except httpx.NetworkError as e:
+            # Handle network errors
             return Response({"error": _("Failed to establish a connection to the API server. Please check your internet connection and try again.")}, status=503)
 
-        except HTTPError as e:
+        except httpx.HTTPStatusError as e:
             # Handle HTTP errors (e.g., 404, 500)
             return Response({"error": _(f"API request returned an error: {e.response.status_code}. Please check your request and try again.")}, status=e.response.status_code)
 
-        except RequestException as e:
-            # Handle general request exceptions
+        except httpx.RequestError as e:
+            # Handle general httpx request exceptions
             return Response({"error": _("Failed to retrieve data from the API. Please try again later.")}, status=500)
+
+        except asyncio.TimeoutError as e:
+            # Handle asyncio-specific timeouts
+            return Response({"error": _("The request timed out. Please try again later.")}, status=504)
 
         except Exception as e:
             # Handle other unexpected exceptions
@@ -176,5 +180,5 @@ class WeatherViewWithLang(WeatherView):
             503: "Service Unavailable: The API server is currently unavailable."
         }
     )
-    def get(self, request, city_name, lang_code=None):
-        return super().retrieve_weather_data(request, city_name, lang_code)
+    async def get(self, request, city_name, lang_code=None):
+        return await super().retrieve_weather_data(request, city_name, lang_code)
