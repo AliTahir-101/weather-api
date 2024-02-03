@@ -25,6 +25,25 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 OPENWEATHERMAP_API_URL = env('OPENWEATHERMAP_API_URL')
 OPENWEATHERMAP_API_KEY = env('OPENWEATHERMAP_API_KEY')
 
+# Enable Django's translation system
+USE_I18N = True
+
+# Enable localized formatting of built-in Django templates and forms
+USE_L10N = True
+
+# Set default language code to English
+LANGUAGE_CODE = 'en-us'
+
+# Available languages in our Django project
+LANGUAGES = [
+    ('en', 'English'),
+    ('ur', 'Urdu'),
+    ('ar', 'Arabic'),
+]
+
+# Path where Django will store the compiled translation files
+LOCALE_PATHS = [os.path.join(BASE_DIR, 'locale'),]
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -59,6 +78,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
 ]
 
 ROOT_URLCONF = 'weather_api.urls'

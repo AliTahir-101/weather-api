@@ -7,6 +7,8 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from weather.serializers import WeatherSerializer
 from requests.exceptions import RequestException, ConnectionError, HTTPError
+from django.utils.translation import activate, gettext as _
+from django.utils.translation import get_language_from_request
 
 
 class WeatherView(APIView):
@@ -43,21 +45,35 @@ class WeatherView(APIView):
         }
     )
     def get(self, request, city_name):
+        return self.retrieve_weather_data(request, city_name)
+
+    def retrieve_weather_data(self, request, city_name, lang_code=None):
         """
         Retrieve weather data for the specified city.
 
         Parameters:
         - `city_name`: The name of the city.
+        - `lang_code` (Optional): Response Language Code (e.g. en, ur, ar).
 
         Returns:
         - Weather data including temperature, humidity, wind speed, etc. (in metric units).
         """
         try:
-            cache_key = f'weather_data_{city_name}'
+            if city_name:
+                city_name = city_name.lower()
+            if lang_code:
+                lang_code = lang_code.lower()
+            else:
+                lang_code = get_language_from_request(request)
+
+            cache_key = f'weather_data_{city_name}_{lang_code}' if lang_code else f'weather_data_{city_name}'
             cached_weather = cache.get(cache_key)
 
             if cached_weather:
                 return Response(cached_weather)
+
+            if lang_code:
+                activate(lang_code)
 
             api_url = f"{settings.OPENWEATHERMAP_API_URL}?q={city_name}&appid={settings.OPENWEATHERMAP_API_KEY}&units=metric"
             response = requests.get(api_url)
@@ -70,15 +86,15 @@ class WeatherView(APIView):
             weather_description = data.get("weather", [{}])[0]
 
             city_info = {
-                "city_name": city_name,
-                "temperature": weather_data.get("temp"),
-                "min_temperature": weather_data.get("temp_min"),
-                "max_temperature": weather_data.get("temp_max"),
-                "humidity": weather_data.get("humidity"),
-                "pressure": weather_data.get("pressure"),
-                "wind_speed": data.get("wind", {}).get("speed"),
-                "wind_direction": self.get_wind_direction(data.get("wind", {}).get("deg")),
-                "description": weather_description.get("description")
+                _("city_name"): _(city_name),
+                _("temperature"): weather_data.get("temp"),
+                _("min_temperature"): weather_data.get("temp_min"),
+                _("max_temperature"): weather_data.get("temp_max"),
+                _("humidity"): weather_data.get("humidity"),
+                _("pressure"): weather_data.get("pressure"),
+                _("wind_speed"): data.get("wind", {}).get("speed"),
+                _("wind_direction"): _(self.get_wind_direction(data.get("wind", {}).get("deg", -1))),
+                _("description"): _(weather_description.get("description", "Not Available!"))
             }
 
             # Cache the result before returning
@@ -88,22 +104,24 @@ class WeatherView(APIView):
 
         except ConnectionError as e:
             # Handle connection errors
-            return Response({"error": "Failed to establish a connection to the API server. Please check your internet connection and try again."}, status=503)
+            return Response({"error": _("Failed to establish a connection to the API server. Please check your internet connection and try again.")}, status=503)
 
         except HTTPError as e:
             # Handle HTTP errors (e.g., 404, 500)
-            return Response({"error": f"API request returned an error: {e.response.status_code}. Please check your request and try again."}, status=e.response.status_code)
+            return Response({"error": _(f"API request returned an error: {e.response.status_code}. Please check your request and try again.")}, status=e.response.status_code)
 
         except RequestException as e:
             # Handle general request exceptions
-            return Response({"error": "Failed to retrieve data from the API. Please try again later."}, status=500)
+            return Response({"error": _("Failed to retrieve data from the API. Please try again later.")}, status=500)
 
         except Exception as e:
             # Handle other unexpected exceptions
-            return Response({"error": "An unexpected error occurred. Please try again later."}, status=500)
+            return Response({"error": _("An unexpected error occurred. Please try again later.")}, status=500)
 
     def get_wind_direction(self, degrees):
         # Map wind direction based on degrees
+        if degrees == -1:
+            return "Not Available!"
         if 22.5 <= degrees < 67.5:
             return "Northeast"
         elif 67.5 <= degrees < 112.5:
@@ -120,3 +138,43 @@ class WeatherView(APIView):
             return "Northwest"
         else:
             return "North"
+
+
+class WeatherViewWithLang(WeatherView):
+    """
+    This view retrieves weather data from the OPENWEATHERMAP_API for a specified city with language code.
+
+    - `city_name`: The name of the city for which weather data is requested.
+    - `lang_code`: Response Language Code (e.g. en, ur, ar).
+    """
+    @swagger_auto_schema(
+        operation_description="Retrieve weather data for a specified city with language code.",
+        manual_parameters=[
+            openapi.Parameter('city_name', openapi.IN_PATH,
+                              description="The name of the city.", type=openapi.TYPE_STRING),
+            openapi.Parameter('lang_code', openapi.IN_PATH,
+                              description="Response Language Code (e.g. en, ur, ar).", type=openapi.TYPE_STRING)
+        ],
+        responses={
+            200: openapi.Response('200 OK', WeatherSerializer(),
+                                  examples={
+                                  'application/json': {
+                                      "شہر کا نام": "کراچی",
+                                      "درجہ حرارت": 25.9,
+                                      "کم سے کم درجہ حرارت": 25.9,
+                                      "زیادہ سے زیادہ درجہ حرارت": 25.9,
+                                      "نمی": 41,
+                                      "دباؤ": 1014,
+                                      "ہوا کی رفتار": 9.26,
+                                      "ہوا کی سمت": "جنوب مشرق",
+                                      "تفصیل": "دھواں"
+                                  }}),
+            400: "Bad Request: The provided city_name parameter is invalid.",
+            403: "Forbidden: Access to this resource is not allowed.",
+            404: "Not Found: The requested city was not found.",
+            500: "Internal Server Error: An unexpected error occurred.",
+            503: "Service Unavailable: The API server is currently unavailable."
+        }
+    )
+    def get(self, request, city_name, lang_code=None):
+        return super().retrieve_weather_data(request, city_name, lang_code)
