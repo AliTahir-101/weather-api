@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather API Documentation</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .container { padding-top: 20px; }
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+            transition: 0.3s;
+        }
+
+        .card:hover {
+            box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+        }
+
+        footer {
+            padding: 20px 0;
+            margin-top: 100px;
+            background-color: #f8f9fa;
+            color: #a3a3a3;
+            font-size: 14px;
+        }
+        .jumbotron {
+            background-color: #f8f9fa;
+            padding: 4rem 0rem;
+        }
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="jumbotron">
+        <h1 class="display-4">{{ project_name }} <span class="badge bg-success" style="color: white;">V1</span></h1>
+        <p class="lead">This Django REST API taps into <a href="https://openweathermap.org/">OpenWeatherMap</a> to deliver real-time weather data for any city globally, supporting English, Urdu, and Arabic. It uses asynchronous calls to boost performance, enabling it to manage more requests simultaneously and reduce consumer wait times.</p>
+        <hr class="my-4">
+        <p>Explore the interactive API documentation or visit the GitHub repository for more details and source code.</p>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Swagger UI</h5>
+                    <p class="card-text">Interactive API documentation that lets you try out the API endpoints directly from your browser.</p>
+                    <a href="{% url 'schema-swagger-ui' %}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">View Swagger</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">ReDoc</h5>
+                    <p class="card-text">Alternative API documentation for a more detailed overview of the API structure and its endpoints.</p>
+                    <a href="{% url 'schema-redoc' %}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">View ReDoc</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">GitHub Repository</h5>
+                    <p class="card-text">Visit GitHub repository for the source code, issue tracking, and contributions.</p>
+                    <a href="https://github.com/AliTahir-101/weather-api" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="margin-top: 23px;" >View on GitHub</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.6/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+<footer class="text-center mt-4">
+    <h4>Made with <span style="color: #e25555;">&hearts;</span> by {{ author }}</h4>
+</footer>
+</html>

@@ -3,11 +3,20 @@ import asyncio
 from adrf.views import APIView
 from rest_framework.response import Response
 from django.core.cache import cache
+from django.shortcuts import render
 from django.conf import settings
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from weather.serializers import WeatherSerializer
 from django.utils.translation import get_language_from_request, activate, gettext as _
+
+
+def landing_page(request):
+    context = {
+        'project_name': 'Weather API',
+        'author': 'Ali Tahir',
+    }
+    return render(request, 'weather/landing_page.html', context)
 
 
 class WeatherView(APIView):
