@@ -1,17 +1,37 @@
 import httpx
 import asyncio
+from typing import Optional, Dict, Any
 from adrf.views import APIView
 from rest_framework.response import Response
 from django.core.cache import cache
 from django.shortcuts import render
 from django.conf import settings
+from django.http import HttpRequest, HttpResponse
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from weather.serializers import WeatherSerializer
 from django.utils.translation import get_language_from_request, activate, gettext as _
 
 
-def landing_page(request):
+def landing_page(request: HttpRequest) -> HttpResponse:
+    """
+    Renders the landing page for the Weather API.
+
+    This view function generates the homepage for the Weather API project. It provides an overview of the API,
+    including its purpose, the technology it uses, and links to additional resources such as interactive API documentation
+    (Swagger UI and ReDoc) and the GitHub repository. The page is designed to guide users and developers in exploring
+    and utilizing the API effectively.
+
+    The context passed to the template includes:
+    - 'project_name': The name of the project, displayed prominently at the top of the page.
+    - 'author': The name of the API author, displayed in the footer.
+
+    Parameters:
+    - request: HttpRequest object representing the current request.
+
+    Returns:
+    - HttpResponse object with the rendered landing page template and context.
+    """
     context = {
         'project_name': 'Weather API',
         'author': 'Ali Tahir',
@@ -52,10 +72,10 @@ class WeatherView(APIView):
             503: "Service Unavailable: The API server is currently unavailable."
         }
     )
-    async def get(self, request, city_name):
+    async def get(self, request: HttpRequest, city_name: str) -> Response:
         return await self.retrieve_weather_data(request, city_name)
 
-    async def retrieve_weather_data(self, request, city_name, lang_code=None):
+    async def retrieve_weather_data(self, request: HttpRequest, city_name: str, lang_code: Optional[str] = None) -> Response:
         """
         Retrieve weather data for the specified city.
 
@@ -94,7 +114,7 @@ class WeatherView(APIView):
             weather_data = data.get("main", {})
             weather_description = data.get("weather", [{}])[0]
 
-            city_info = {
+            city_info: Dict[str, Any] = {
                 _("city_name"): _(city_name),
                 _("temperature"): weather_data.get("temp"),
                 _("min_temperature"): weather_data.get("temp_min"),
@@ -131,7 +151,7 @@ class WeatherView(APIView):
             # Handle other unexpected exceptions
             return Response({"error": _("An unexpected error occurred. Please try again later.")}, status=500)
 
-    def get_wind_direction(self, degrees):
+    def get_wind_direction(self, degrees: float) -> str:
         # Map wind direction based on degrees
         if degrees == -1:
             return "Not Available!"
@@ -189,5 +209,5 @@ class WeatherViewWithLang(WeatherView):
             503: "Service Unavailable: The API server is currently unavailable."
         }
     )
-    async def get(self, request, city_name, lang_code=None):
+    async def get(self, request: HttpRequest, city_name: str, lang_code: str) -> Response:
         return await super().retrieve_weather_data(request, city_name, lang_code)
