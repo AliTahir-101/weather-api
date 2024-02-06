@@ -123,3 +123,6 @@ To run tests, use the following command:
 docker-compose down --remove-orphans (Stopping and Removing Previous Containers (Optional))
 docker-compose run --rm  weather_api pytest --cov-report term-missing --cov=weather.views weather/tests/
 ```
+
+![image](https://github.com/AliTahir-101/weather-api/assets/76158157/1604822b-9bdd-430e-96fb-bea32353dfc8)
+
