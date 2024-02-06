@@ -60,14 +60,14 @@ Before running this project, ensure you have the following installed:
 
 ## 📡 API Endpoints
 
-- `/api/v1/weather/<city_name>`: Get current weather data for a specific city.
-- `/api/v1/weather/<city_name>/<lang_code>`: Get current weather data for a specific city and language.
+- `/api/v1/weather/current/<city_name>`: Get current weather data for a specific city.
+- `/api/v1/weather/current/<city_name>/<lang_code>`: Get current weather data for a specific city and language.
 - `/swagger/`: Interactive API documentation that lets you try out the API endpoints directly from your browser.
 - `/redoc/`: Alternative API documentation for a more detailed overview of the API structure and its endpoints.
 
 ## 📋 API Usage
 
-To use the API, make a GET request to the `/api/v1/weather/<city_name>` endpoint with the desired city name as a parameter.
+To use the API, make a GET request to the `/api/v1/weather/current/<city_name>` endpoint with the desired city name as a parameter.
 
 Example Request:
 
@@ -91,7 +91,7 @@ Example Response:
 }
 ```
 
-You can also make a GET request to the `/api/v1/weather/<city_name>/<lang_code>` endpoint with the desired city name along with desired lang code currently it supports only (en, ar, ur).
+You can also make a GET request to the `/api/v1/weather/current/<city_name>/<lang_code>` endpoint with the desired city name along with desired lang code currently it supports only (en, ar, ur).
 
 Example Request:
 
