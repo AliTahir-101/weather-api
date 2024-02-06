@@ -1,6 +1,6 @@
 version: "3"
 services:
-  django:
+  weather_api:
     build:
       context: .
     ports:
