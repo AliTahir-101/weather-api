@@ -24,6 +24,9 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 OPENWEATHERMAP_API_URL = env('OPENWEATHERMAP_API_URL')
 OPENWEATHERMAP_API_KEY = env('OPENWEATHERMAP_API_KEY')
+REDIS_CACHE_URL = env('REDIS_CACHE_URL')
+SECRET_KEY = env('SECRET_KEY')
+ALLOWED_HOSTS = env('ALLOWED_HOSTS')
 
 # Enable Django's translation system
 USE_I18N = True
@@ -47,11 +50,8 @@ LOCALE_PATHS = [os.path.join(BASE_DIR, 'locale'),]
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-%q*r!c-7yo&&&lsceuck3$azn_4#pe9u$j@e9!#wz9zoq=%w9-'
-
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool('DEBUG', default=False)
 
 ALLOWED_HOSTS = []
 
@@ -128,7 +128,7 @@ DATABASES = {
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/1',
+        'LOCATION': REDIS_CACHE_URL,
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         },
