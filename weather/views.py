@@ -1,5 +1,6 @@
 import httpx
 import asyncio
+import logging
 from typing import Optional, Dict, Any
 from adrf.views import APIView
 from rest_framework.response import Response
@@ -11,6 +12,8 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from weather.serializers import WeatherSerializer
 from django.utils.translation import get_language_from_request, activate, gettext as _
+
+logger = logging.getLogger(__name__)
 
 
 def landing_page(request: HttpRequest) -> HttpResponse:
@@ -95,10 +98,15 @@ class WeatherView(APIView):
             else:
                 lang_code = get_language_from_request(request)
 
+            logger.info(
+                f"Attempting to retrieve weather data for {city_name} with language {lang_code}")
+
             cache_key = f'weather_data_{city_name}_{lang_code}' if lang_code else f'weather_data_{city_name}'
             cached_weather = cache.get(cache_key)
 
             if cached_weather:
+                logger.info(
+                    f"Fetching cached weather data for {city_name} with language {lang_code}")
                 return Response(cached_weather)
 
             if lang_code:
@@ -134,22 +142,32 @@ class WeatherView(APIView):
 
         except httpx.NetworkError as e:
             # Handle network errors
+            logger.error(
+                f"Network error while fetching weather data for {city_name}: {e}")
             return Response({"error": _("Failed to establish a connection to the API server. Please check your internet connection and try again.")}, status=503)
 
         except httpx.HTTPStatusError as e:
             # Handle HTTP errors (e.g., 404, 500)
+            logger.error(
+                f"HTTP status error {e.response.status_code} while fetching weather data for {city_name}: {e}")
             return Response({"error": _(f"API request returned an error: {e.response.status_code}. Please check your request and try again.")}, status=e.response.status_code)
 
         except httpx.RequestError as e:
             # Handle general httpx request exceptions
+            logger.error(
+                f"Request error while fetching weather data for {city_name}: {e}")
             return Response({"error": _("Failed to retrieve data from the API. Please try again later.")}, status=500)
 
         except asyncio.TimeoutError as e:
             # Handle asyncio-specific timeouts
+            logger.error(
+                f"Timeout error while fetching weather data for {city_name}: {e}")
             return Response({"error": _("The request timed out. Please try again later.")}, status=504)
 
         except Exception as e:
             # Handle other unexpected exceptions
+            logger.exception(
+                "An unexpected error occurred while fetching weather data", exc_info=True)
             return Response({"error": _("An unexpected error occurred. Please try again later.")}, status=500)
 
     def get_wind_direction(self, degrees: float) -> str:
