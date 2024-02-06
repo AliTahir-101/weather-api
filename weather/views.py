@@ -46,6 +46,7 @@ class WeatherView(APIView):
     - `city_name`: The name of the city for which weather data is requested.
     """
     @swagger_auto_schema(
+        operation_id="getCurrentWeatherByCity",
         operation_description="Retrieve weather data for a specified city.",
         manual_parameters=[
             openapi.Parameter('city_name', openapi.IN_PATH,
@@ -181,6 +182,7 @@ class WeatherViewWithLang(WeatherView):
     - `lang_code`: Response Language Code (e.g. en, ur, ar).
     """
     @swagger_auto_schema(
+        operation_id="getCurrentWeatherByCityAndLang",
         operation_description="Retrieve weather data for a specified city with language code.",
         manual_parameters=[
             openapi.Parameter('city_name', openapi.IN_PATH,
