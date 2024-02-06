@@ -10,7 +10,6 @@ COPY requirements.txt /app/
 RUN pip install -r requirements.txt
 RUN apt-get update && apt-get install -y gettext
 
-
 # Copy the rest of application code into the container at /app
 COPY . /app/
 
@@ -18,7 +17,6 @@ COPY . /app/
 RUN python manage.py migrate
 RUN python manage.py collectstatic
 RUN django-admin compilemessages
-
 
 # Expose the port
 EXPOSE 8000
