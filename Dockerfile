@@ -8,6 +8,8 @@ WORKDIR /app
 # Copy the requirements file into the container at /app
 COPY requirements.txt /app/
 RUN pip install -r requirements.txt
+RUN apt-get update && apt-get install -y gettext
+
 
 # Copy the rest of application code into the container at /app
 COPY . /app/
@@ -15,6 +17,8 @@ COPY . /app/
 # Run database migrations and collectstatic data
 RUN python manage.py migrate
 RUN python manage.py collectstatic
+RUN django-admin compilemessages
+
 
 # Expose the port
 EXPOSE 8000

@@ -26,7 +26,7 @@ OPENWEATHERMAP_API_URL = env('OPENWEATHERMAP_API_URL')
 OPENWEATHERMAP_API_KEY = env('OPENWEATHERMAP_API_KEY')
 REDIS_CACHE_URL = env('REDIS_CACHE_URL')
 SECRET_KEY = env('SECRET_KEY')
-ALLOWED_HOSTS = env('ALLOWED_HOSTS')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 # Enable Django's translation system
 USE_I18N = True
@@ -53,8 +53,6 @@ LOCALE_PATHS = [os.path.join(BASE_DIR, 'locale'),]
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', default=False)
 
-ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -68,18 +66,21 @@ INSTALLED_APPS = [
     'weather',
     'rest_framework',
     'drf_yasg',
-    'adrf'
+    'adrf',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.locale.LocaleMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'weather_api.urls'
@@ -101,6 +102,13 @@ TEMPLATES = [
 ]
 
 ASGI_APPLICATION = 'weather_api.asgi.application'
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+]
+
+CORS_ALLOW_ALL_ORIGINS = True
+
 
 # Default Permissions or Pagination Styles
 REST_FRAMEWORK = {
@@ -177,6 +185,15 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Extra places for collectstatic to find static files.
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+)
+
+# Simplified static file serving.
+# https://warehouse.python.org/project/whitenoise/
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

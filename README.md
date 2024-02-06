@@ -41,9 +41,9 @@ Before running this project, ensure you have the following installed:
    OPENWEATHERMAP_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
    OPENWEATHERMAP_API_URL=http://api.openweathermap.org/data/2.5/weather
    DEBUG=True # For Dev
-   REDIS_CACHE_URL=redis://127.0.0.1:6379/1
+   REDIS_CACHE_URL=redis://redis:6379/1 # without docker use redis://127.0.0.1:6379/1
    SECRET_KEY='django-insecure-%q*r!c-7xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxw9-'
-   ALLOWED_HOSTS=['*'] # For Dev
+   ALLOWED_HOSTS='localhost,127.0.0.1' # For Dev
    ```
 
 3. **Build and Run with Docker Compose:**
