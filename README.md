@@ -2,7 +2,7 @@
 
 ## 🌐 Overview
 
-The Weather API is a Django web application that Provides current weather information for any city using the OpenWeatherMap API. This API supports multiple languages, allowing consumers to request data in their preferred language avaiable options (en, ur, ar) using the 'Accept-Language' header or 'lang_code' URL parameter. Additionally, this API leverages asynchronous network calls for enhanced performance, particularly under high load or when fetching data from slow external APIs. This means that the API is capable of handling a larger number of requests concurrently, reducing the wait time for each consumer.
+The Weather API Provides current weather information for any city using the OpenWeatherMap API. This API supports multiple languages, allowing consumers to request data in their preferred language avaiable options (en, ur, ar) using the 'Accept-Language' header or 'lang_code' URL parameter. Additionally, this API leverages asynchronous network calls for enhanced performance, particularly under high load or when fetching data from slow external APIs. This means that the API is capable of handling a larger number of requests concurrently, reducing the wait time for each consumer.
 
 ## Features
 
