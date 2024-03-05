@@ -10,52 +10,23 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+from pathlib import Path
 import os
 import environ
-
-from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Initialize environment variables
 env = environ.Env()
-# Reading .env file
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-OPENWEATHERMAP_API_URL = env('OPENWEATHERMAP_API_URL')
-OPENWEATHERMAP_API_KEY = env('OPENWEATHERMAP_API_KEY')
-REDIS_CACHE_URL = env('REDIS_CACHE_URL')
+# Security
 SECRET_KEY = env('SECRET_KEY')
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
-
-# Enable Django's translation system
-USE_I18N = True
-
-# Enable localized formatting of built-in Django templates and forms
-USE_L10N = True
-
-# Set default language code to English
-LANGUAGE_CODE = 'en-us'
-
-# Available languages in our Django project
-LANGUAGES = [
-    ('en', 'English'),
-    ('ur', 'Urdu'),
-    ('ar', 'Arabic'),
-]
-
-# Path where Django will store the compiled translation files
-LOCALE_PATHS = [os.path.join(BASE_DIR, 'locale'),]
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
-
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', default=False)
-
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -63,24 +34,25 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'weather',
+    # Third party apps
     'rest_framework',
     'drf_yasg',
-    'adrf',
     'corsheaders',
+    # Local apps
+    'weather',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Static files
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # CORS
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django.middleware.locale.LocaleMiddleware',  # Internationalization
 ]
 
 ROOT_URLCONF = 'weather_api.urls'
@@ -101,31 +73,10 @@ TEMPLATES = [
     },
 ]
 
+WSGI_APPLICATION = 'weather_api.wsgi.application'
 ASGI_APPLICATION = 'weather_api.asgi.application'
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8000",
-]
-
-CORS_ALLOW_ALL_ORIGINS = True
-
-
-# Default Permissions or Pagination Styles
-REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
-    ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10
-}
-
-SWAGGER_SETTINGS = {
-    'USE_SESSION_AUTH': False
-}
-
 # Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -133,25 +84,20 @@ DATABASES = {
     }
 }
 
+# Cache
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': REDIS_CACHE_URL,
+        'LOCATION': env('REDIS_CACHE_URL'),
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         },
         'KEY_PREFIX': 'weather_api'
     }
 }
-
-
-# Cache timeout for weather data in seconds (e.g. 300 for 5 minutes)
 WEATHER_CACHE_TIMEOUT = 300  # Default to 5 minutes
 
-
 # Password validation
-# https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -167,35 +113,41 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/5.0/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
+USE_L10N = True
 USE_TZ = True
-
+LANGUAGES = [
+    ('en', 'English'),
+    ('ur', 'Urdu'),
+    ('ar', 'Arabic'),
+]
+LOCALE_PATHS = [os.path.join(BASE_DIR, 'locale'),]
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
-
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-# Extra places for collectstatic to find static files.
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static'),
-)
-
-# Simplified static file serving.
-# https://warehouse.python.org/project/whitenoise/
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static'),]
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# DRF and CORS
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10
+}
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+]
+CORS_ALLOW_ALL_ORIGINS = True
+
+# Additional settings
+OPENWEATHERMAP_API_URL = env('OPENWEATHERMAP_API_URL')
+OPENWEATHERMAP_API_KEY = env('OPENWEATHERMAP_API_KEY')
